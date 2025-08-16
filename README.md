@@ -45,4 +45,10 @@ No login required. All data stays local to your device.
 
 ## 📁 Repo Structure
 
+## 📜 License
+
+This project is licensed under the [MIT License](LICENSE).  
+You’re free to use, adapt, and share — just include attribution.
+
+
 
