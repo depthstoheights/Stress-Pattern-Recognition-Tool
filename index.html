@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stress Pattern Recognition - Depths to Heights</title>
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiU3RyZXNzIFBhdHRlcm4gUmVjb2duaXRpb24gLSBEZXB0aHMgdG8gSGVpZ2h0cyIsInNob3J0X25hbWUiOiJTdHJlc3MgUGF0dGVybnMiLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzFhMTYzYSIsInRoZW1lX2NvbG9yIjoiI2ZmNjc1NyIsImljb25zIjpbeyJzcmMiOiJkYXRhOmltYWdlL3N2Zyt4bWw7YmFzZTY0LFBITjJaeUIzYVdSMGFEMGlNVEk0SWlCb1pXbG5hSFE5SWpFeU9DSWlJSFpwWlhkQ2IzZzlJakFnTUNBeE1qZ2dNVEk0SWlCNGJXeHVjejBpYUhSMGNEb3ZMM2QzZHk1M015NXZjbWN2TWpBd01DOXpkbWNpUGdvOFl6bHlZMnhsSUdONFBTSTJOQ0lnWTNrOUlqWTRJaUJ5UFNJek1DSWdabWxzYkQwaUkzWm1OakExTnlJdlBnbzhkR1Y0ZENBNFBTSTJOQ0lnZVQwaU56Y2lJSFJsZUhRdFlXNWphRzl5UFNKdGFXUmtiR1VpSUdadmJuUXRjMmw2WlQwaU1UWWlJR1pwYkd3OUluZG9hWFJsSWo0MFBDOTBaWGgwUGp3dmMzWm5QZz09Iiwic2l6ZXMiOiIxMjh4MTI4IiwidHlwZSI6ImltYWdlL3N2Zyt4bWwifV19">
+    <style>
+        :root {
+            --primary: #ff6757;
+            --secondary: #ffa502;
+            --accent: #3742fa;
+            --dark: #1a163a;
+            --darker: #0f0c23;
+            --light: #f5f6fa;
+            --gray: #747d8c;
+            --success: #2ed573;
+            --warning: #ff9f43;
+            --danger: #ff3838;
+            --purple: #5f27cd;
+            --cyan: #00d2d3;
+            --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 20px rgba(0,0,0,0.15);
+            --shadow-lg: 0 10px 40px rgba(0,0,0,0.2);
+            --border-radius: 16px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            background: linear-gradient(135deg, var(--dark) 0%, var(--darker) 100%);
+            color: var(--light);
+            line-height: 1.6;
+            font-size: 16px;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body.dyslexia-friendly {
+            font-family: 'OpenDyslexic', Arial, sans-serif;
+            letter-spacing: 0.1em;
+            word-spacing: 0.15em;
+            line-height: 1.8;
+        }
+
+        body.high-contrast {
+            --primary: #ff4444;
+            --secondary: #ffaa00;
+            --dark: #000000;
+            --darker: #111111;
+            --light: #ffffff;
+        }
+
+        body.large-text { font-size: 20px; }
+        body.extra-large-text { font-size: 24px; }
+
+        /* Animated background elements */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .floating-shape {
+            position: absolute;
+            opacity: 0.1;
+            animation: float 20s infinite linear;
+        }
+
+        .shape-1 { top: 10%; left: 10%; animation-delay: 0s; }
+        .shape-2 { top: 20%; right: 10%; animation-delay: 5s; }
+        .shape-3 { bottom: 20%; left: 20%; animation-delay: 10s; }
+        .shape-4 { bottom: 10%; right: 20%; animation-delay: 15s; }
+
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            25% { transform: translateY(-20px) rotate(90deg); }
+            50% { transform: translateY(0px) rotate(180deg); }
+            75% { transform: translateY(20px) rotate(270deg); }
+            100% { transform: translateY(0px) rotate(360deg); }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 2px;
+        }
+
+        .header h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .header p {
+            font-size: 1.25rem;
+            color: var(--gray);
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+
+        .feature-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 103, 87, 0.1);
+            border: 1px solid rgba(255, 103, 87, 0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .accessibility-panel {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: rgba(26, 22, 58, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            min-width: 200px;
+        }
+
+        .accessibility-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--light);
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: var(--transition);
+            text-align: left;
+        }
+
+        .accessibility-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .accessibility-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .input-section {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            height: fit-content;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--light);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .section-icon {
+            width: 2rem;
+            height: 2rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .stress-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--light);
+            font-size: 0.95rem;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 0.875rem;
+            color: var(--light);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(255, 103, 87, 0.1);
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .stress-level-selector {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .stress-level {
+            aspect-ratio: 1;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.25rem;
+            position: relative;
+        }
+
+        .stress-level:hover {
+            transform: scale(1.05);
+        }
+
+        .stress-level.level-1 { background: linear-gradient(135deg, var(--success), #2ed573); }
+        .stress-level.level-2 { background: linear-gradient(135deg, var(--cyan), #00d2d3); }
+        .stress-level.level-3 { background: linear-gradient(135deg, var(--warning), #ff9f43); }
+        .stress-level.level-4 { background: linear-gradient(135deg, var(--primary), #ff6757); }
+        .stress-level.level-5 { background: linear-gradient(135deg, var(--danger), #ff3838); }
+
+        .stress-level.selected {
+            border-color: var(--light);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 1rem;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .analysis-section {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            height: 400px;
+            position: relative;
+        }
+
+        .chart-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--gray);
+            font-size: 1.1rem;
+            text-align: center;
+        }
+
+        .patterns-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .pattern-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .pattern-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary);
+        }
+
+        .pattern-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .pattern-icon {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .pattern-icon.trigger { background: linear-gradient(135deg, var(--primary), var(--secondary)); }
+        .pattern-icon.time { background: linear-gradient(135deg, var(--accent), var(--purple)); }
+        .pattern-icon.emotional { background: linear-gradient(135deg, var(--cyan), var(--success)); }
+
+        .pattern-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--light);
+        }
+
+        .pattern-subtitle {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .pattern-content {
+            color: var(--light);
+            line-height: 1.6;
+        }
+
+        .insights-section {
+            background: linear-gradient(135deg, rgba(255, 103, 87, 0.1), rgba(255, 165, 2, 0.1));
+            border: 1px solid rgba(255, 103, 87, 0.3);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .breakthrough-insight {
+            background: linear-gradient(135deg, var(--purple), var(--accent));
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            margin: 2rem 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .breakthrough-insight::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent, rgba(255,255,255,0.1), transparent);
+            animation: rotate 8s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .insight-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .insight-title {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            color: white;
+        }
+
+        .biblical-comfort {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 4px solid var(--primary);
+            border-radius: 0 var(--border-radius) var(--border-radius) 0;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            font-style: italic;
+        }
+
+        .verse-text {
+            font-size: 1.1rem;
+            color: var(--light);
+            margin-bottom: 0.5rem;
+        }
+
+        .verse-ref {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .share-section {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 3rem 0;
+            flex-wrap: wrap;
+        }
+
+        .share-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 0.875rem 1.5rem;
+            color: var(--light);
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .share-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        .stress-heatmap {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            margin: 1rem 0;
+        }
+
+        .heatmap-day {
+            aspect-ratio: 1;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            transition: var(--transition);
+        }
+
+        .heatmap-day.stress-1 { background: var(--success); }
+        .heatmap-day.stress-2 { background: var(--cyan); }
+        .heatmap-day.stress-3 { background: var(--warning); }
+        .heatmap-day.stress-4 { background: var(--primary); }
+        .heatmap-day.stress-5 { background: var(--danger); }
+
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            
+            .accessibility-panel {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin-bottom: 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .stress-level-selector {
+                grid-template-columns: repeat(5, 1fr);
+            }
+            
+            .patterns-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .hidden { display: none; }
+        .show { display: block; }
+
+        button:focus, .stress-level:focus, .pattern-card:focus {
+            outline: 3px solid var(--primary);
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation">
+        <div class="floating-shape shape-1">🧠</div>
+        <div class="floating-shape shape-2">💭</div>
+        <div class="floating-shape shape-3">⚡</div>
+        <div class="floating-shape shape-4">🎯</div>
+    </div>
+
+    <div class="accessibility-panel">
+        <button class="accessibility-btn" onclick="toggleDyslexiaFont()" id="dyslexiaBtn">
+            📖 Dyslexia Font
+        </button>
+        <button class="accessibility-btn" onclick="toggleHighContrast()" id="contrastBtn">
+            🎨 High Contrast
+        </button>
+        <button class="accessibility-btn" onclick="increaseTextSize()" id="textSizeBtn">
+            🔍 Normal Text
+        </button>
+    </div>
+
+    <div class="container">
+        <header class="header">
+            <h1>Stress Pattern Recognition</h1>
+            <p>Identify your stress triggers and discover breakthrough insights through AI-powered analysis and biblical wisdom</p>
+            <div class="feature-badge">
+                <span>⚡</span>
+                <span>AI-Powered Pattern Detection</span>
+            </div>
+        </header>
+
+        <div class="main-grid">
+            <section class="input-section">
+                <h2 class="section-title">
+                    <div class="section-icon">📊</div>
+                    Track Your Stress
+                </h2>
+                
+                <form class="stress-form" id="stressForm">
+                    <div class="form-group">
+                        <label class="form-label" for="stressLevel">Current Stress Level</label>
+                        <div class="stress-level-selector">
+                            <div class="stress-level level-1" data-level="1" onclick="selectStressLevel(1)" tabindex="0">
+                                1
+                            </div>
+                            <div class="stress-level level-2" data-level="2" onclick="selectStressLevel(2)" tabindex="0">
+                                2
+                            </div>
+                            <div class="stress-level level-3" data-level="3" onclick="selectStressLevel(3)" tabindex="0">
+                                3
+                            </div>
+                            <div class="stress-level level-4" data-level="4" onclick="selectStressLevel(4)" tabindex="0">
+                                4
+                            </div>
+                            <div class="stress-level level-5" data-level="5" onclick="selectStressLevel(5)" tabindex="0">
+                                5
+                            </div>
+                        </div>
+                        <small style="color: var(--gray); margin-top: 0.5rem;">1 = Calm, 5 = Overwhelming</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="triggers">What triggered this stress?</label>
+                        <input type="text" id="triggers" class="form-input" placeholder="e.g., Work deadline, family conflict, financial concerns...">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="timeOfDay">Time of Day</label>
+                        <select id="timeOfDay" class="form-select">
+                            <option value="">Select time...</option>
+                            <option value="early-morning">Early Morning (5-8 AM)</option>
+                            <option value="morning">Morning (8-11 AM)</option>
+                            <option value="midday">Midday (11 AM-2 PM)</option>
+                            <option value="afternoon">Afternoon (2-5 PM)</option>
+                            <option value="evening">Evening (5-8 PM)</option>
+                            <option value="night">Night (8-11 PM)</option>
+                            <option value="late-night">Late Night (11 PM+)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="location">Location/Environment</label>
+                        <select id="location" class="form-select">
+                            <option value="">Select location...</option>
+                            <option value="home">Home</option>
+                            <option value="work">Work/Office</option>
+                            <option value="car">Car/Commuting</option>
+                            <option value="social">Social Setting</option>
+                            <option value="public">Public Place</option>
+                            <option value="outdoors">Outdoors</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="physicalSymptoms">Physical Symptoms</label>
+                        <input type="text" id="physicalSymptoms" class="form-input" placeholder="e.g., Tension headache, tight chest, racing heart...">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="thoughts">Thoughts/Emotions</label>
+                        <textarea id="thoughts" class="form-textarea" placeholder="What were you thinking or feeling when the stress hit?"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="copingResponse">How did you respond?</label>
+                        <textarea id="copingResponse" class="form-textarea" placeholder="What did you do to cope with the stress?"></textarea>
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="submitBtn">
+                        <span id="submitText">Analyze Stress Pattern</span>
+                        <span id="submitLoading" class="loading hidden"></span>
+                    </button>
+                </form>
+            </section>
+
+            <section class="analysis-section">
+                <div class="chart-container">
+                    <h3 class="section-title">
+                        <div class="section-icon">📈</div>
+                        Stress Heatmap
+                    </h3>
+                    <div class="chart-placeholder" id="chartPlaceholder">
+                        Track stress for 7+ days to see patterns emerge
+                    </div>
+                    <div class="stress-heatmap hidden" id="stressHeatmap">
+                        <!-- Heatmap will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="patterns-grid" id="patternsGrid">
+                    <!-- Pattern cards will be populated by JavaScript -->
+                </div>
+            </section>
+        </div>
+
+        <div class="insights-section hidden" id="insightsSection">
+            <h2 class="section-title">
+                <div class="section-icon">💡</div>
+                Your Breakthrough Insights
+            </h2>
+            <div id="insightContent">
+                <!-- AI insights will be populated here -->
+            </div>
+        </div>
+
+        <div class="biblical-comfort">
+            <div class="verse-text">
+                "Cast all your anxiety on him because he cares for you."
+            </div>
+            <div class="verse-ref">— 1 Peter 5:7</div>
+        </div>
+
+        <div class="share-section">
+            <button class="share-btn" onclick="shareInsights()">
+                <span>📤</span>
+                <span>Share Your Insights</span>
+            </button>
+            <button class="share-btn" onclick="downloadReport()">
+                <span>📊</span>
+                <span>Download Report</span>
+            </button>
+            <button class="share-btn" onclick="exportData()">
+                <span>💾</span>
+                <span>Export Data</span>
+            </button>
+        </div>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <p><strong>Free to use.</strong> If this encouraged you, feel free to <a href="https://www.paypal.com/donate/?hosted_button_id=8GRE7B8C3TP2U" target="_blank">buy me a coffee</a>.</p>
+                <br>
+                <p><strong>Depths to Heights</strong></p>
+                <p><a href="https://depthstoheights.org" target="_blank">depthstoheights.org</a></p>
+                <p><a href="mailto:depthstoheights@gmail.com">depthstoheights@gmail.com</a></p>
+                <p><strong>Made by Justin</strong></p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        let currentStressLevel = null;
+        let textSizeLevel = 0;
+        let stressData = JSON.parse(localStorage.getItem('stressPatternData') || '[]');
+
+        // Stress triggers and patterns database
+        const stressTriggerCategories = {
+            work: ['deadline', 'meeting', 'email', 'boss', 'project', 'presentation', 'overtime'],
+            relationships: ['argument', 'conflict', 'family', 'friend', 'spouse', 'children', 'social'],
+            financial: ['money', 'bill', 'debt', 'budget', 'expense', 'income', 'financial'],
+            health: ['pain', 'sick', 'tired', 'doctor', 'medical', 'health', 'energy'],
+            time: ['late', 'rushed', 'schedule', 'time', 'busy', 'overwhelmed', 'multitask'],
+            change: ['moving', 'job', 'life', 'transition', 'uncertainty', 'future', 'decision'],
+            technology: ['computer', 'phone', 'internet', 'technical', 'device', 'software'],
+            environment: ['noise', 'crowded', 'traffic', 'weather', 'pollution', 'space']
+        };
+
+        const biblicalComfortByTrigger = {
+            work: {
+                verse: "Come to me, all you who are weary and burdened, and I will give you rest.",
+                ref: "Matthew 11:28",
+                insight: "God sees your work stress and invites you to find rest in Him, even in busy seasons."
+            },
+            relationships: {
+                verse: "Above all, love each other deeply, because love covers over a multitude of sins.",
+                ref: "1 Peter 4:8",
+                insight: "Relationship stress often calls us to deeper love and forgiveness, both giving and receiving."
+            },
+            financial: {
+                verse: "And my God will meet all your needs according to the riches of his glory in Christ Jesus.",
+                ref: "Philippians 4:19",
+                insight: "Financial concerns remind us that our ultimate security comes from God's provision, not our bank account."
+            },
+            health: {
+                verse: "He heals the brokenhearted and binds up their wounds.",
+                ref: "Psalm 147:3",
+                insight: "God is present in our physical struggles and offers healing for both body and spirit."
+            },
+            time: {
+                verse: "There is a time for everything, and a season for every activity under the heavens.",
+                ref: "Ecclesiastes 3:1",
+                insight: "Time pressure reminds us to trust God's timing and find peace in His perfect schedule."
+            },
+            change: {
+                verse: "Jesus Christ is the same yesterday and today and forever.",
+                ref: "Hebrews 13:8",
+                insight: "In times of change and uncertainty, we can anchor ourselves in God's unchanging nature."
+            }
+        };
+
+        function initializeApp() {
+            loadAccessibilityPreferences();
+            updateHeatmap();
+            analyzeExistingPatterns();
+            
+            // Add form submission handler
+            document.getElementById('stressForm').addEventListener('submit', handleSubmit);
+        }
+
+        function selectStressLevel(level) {
+            // Remove previous selection
+            document.querySelectorAll('.stress-level').forEach(el => {
+                el.classList.remove('selected');
+            });
+            
+            // Select current level
+            document.querySelector(`[data-level="${level}"]`).classList.add('selected');
+            currentStressLevel = level;
+        }
+
+        function handleSubmit(e) {
+            e.preventDefault();
+            
+            if (!currentStressLevel) {
+                alert('Please select your stress level');
+                return;
+            }
+            
+            const formData = {
+                timestamp: new Date().toISOString(),
+                date: new Date().toDateString(),
+                stressLevel: currentStressLevel,
+                triggers: document.getElementById('triggers').value,
+                timeOfDay: document.getElementById('timeOfDay').value,
+                location: document.getElementById('location').value,
+                physicalSymptoms: document.getElementById('physicalSymptoms').value,
+                thoughts: document.getElementById('thoughts').value,
+                copingResponse: document.getElementById('copingResponse').value
+            };
+            
+            // Show loading state
+            const submitBtn = document.getElementById('submitBtn');
+            const submitText = document.getElementById('submitText');
+            const submitLoading = document.getElementById('submitLoading');
+            
+            submitBtn.disabled = true;
+            submitText.classList.add('hidden');
+            submitLoading.classList.remove('hidden');
+            
+            // Simulate AI analysis
+            setTimeout(() => {
+                stressData.push(formData);
+                localStorage.setItem('stressPatternData', JSON.stringify(stressData));
+                
+                updateHeatmap();
+                analyzePatterns(formData);
+                resetForm();
+                
+                submitBtn.disabled = false;
+                submitText.classList.remove('hidden');
+                submitLoading.classList.add('hidden');
+                
+                // Scroll to insights
+                document.getElementById('insightsSection').scrollIntoView({ 
+                    behavior: 'smooth' 
+                });
+            }, 2000);
+        }
+
+        function resetForm() {
+            document.getElementById('stressForm').reset();
+            document.querySelectorAll('.stress-level').forEach(el => {
+                el.classList.remove('selected');
+            });
+            currentStressLevel = null;
+        }
+
+        function updateHeatmap() {
+            if (stressData.length < 3) return;
+            
+            const heatmap = document.getElementById('stressHeatmap');
+            const placeholder = document.getElementById('chartPlaceholder');
+            
+            placeholder.classList.add('hidden');
+            heatmap.classList.remove('hidden');
+            
+            // Get last 21 days
+            const days = [];
+            for (let i = 20; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                days.push(date.toDateString());
+            }
+            
+            heatmap.innerHTML = days.map(day => {
+                const dayData = stressData.filter(entry => entry.date === day);
+                if (dayData.length === 0) {
+                    return '<div class="heatmap-day"></div>';
+                }
+                
+                const avgStress = Math.round(
+                    dayData.reduce((sum, entry) => sum + entry.stressLevel, 0) / dayData.length
+                );
+                
+                return `<div class="heatmap-day stress-${avgStress}" title="${day}: Stress Level ${avgStress}"></div>`;
+            }).join('');
+        }
+
+        function analyzeExistingPatterns() {
+            if (stressData.length < 3) return;
+            
+            const patterns = identifyPatterns(stressData);
+            displayPatterns(patterns);
+        }
+
+        function analyzePatterns(newEntry) {
+            const patterns = identifyPatterns(stressData);
+            const insights = generateInsights(stressData, newEntry);
+            
+            displayPatterns(patterns);
+            displayInsights(insights);
+            
+            document.getElementById('insightsSection').classList.remove('hidden');
+        }
+
+        function identifyPatterns(data) {
+            const patterns = [];
+            
+            // Time-based patterns
+            const timePatterns = analyzeTimePatterns(data);
+            if (timePatterns.peak) {
+                patterns.push({
+                    type: 'time',
+                    title: 'Peak Stress Times',
+                    subtitle: 'When stress hits hardest',
+                    content: `Your stress levels are consistently highest during ${timePatterns.peak.time}. This pattern suggests your ${timePatterns.peak.interpretation}.`
+                });
+            }
+            
+            // Trigger patterns
+            const triggerPatterns = analyzeTriggerPatterns(data);
+            if (triggerPatterns.primary) {
+                patterns.push({
+                    type: 'trigger',
+                    title: 'Primary Stress Triggers',
+                    subtitle: 'What sets off your stress',
+                    content: `Your most common stress triggers are related to ${triggerPatterns.primary.category}. Keywords that frequently appear: ${triggerPatterns.primary.keywords.join(', ')}.`
+                });
+            }
+            
+            // Emotional patterns
+            const emotionalPatterns = analyzeEmotionalPatterns(data);
+            if (emotionalPatterns.dominant) {
+                patterns.push({
+                    type: 'emotional',
+                    title: 'Emotional Response Patterns',
+                    subtitle: 'How you typically react',
+                    content: `Your stress responses often involve ${emotionalPatterns.dominant.themes.join(', ')}. This suggests a pattern of ${emotionalPatterns.dominant.interpretation}.`
+                });
+            }
+            
+            return patterns;
+        }
+
+        function analyzeTimePatterns(data) {
+            const timeCounts = {};
+            const timeStress = {};
+            
+            data.forEach(entry => {
+                if (entry.timeOfDay) {
+                    timeCounts[entry.timeOfDay] = (timeCounts[entry.timeOfDay] || 0) + 1;
+                    timeStress[entry.timeOfDay] = (timeStress[entry.timeOfDay] || []);
+                    timeStress[entry.timeOfDay].push(entry.stressLevel);
+                }
+            });
+            
+            let peakTime = null;
+            let highestAvgStress = 0;
+            
+            for (const [time, stressLevels] of Object.entries(timeStress)) {
+                const avgStress = stressLevels.reduce((sum, level) => sum + level, 0) / stressLevels.length;
+                if (avgStress > highestAvgStress && stressLevels.length >= 2) {
+                    highestAvgStress = avgStress;
+                    peakTime = time;
+                }
+            }
+            
+            const timeInterpretations = {
+                'early-morning': 'morning routine might need adjustment',
+                'morning': 'workday startup creates pressure',
+                'midday': 'midday energy dip affects resilience',
+                'afternoon': 'afternoon responsibilities pile up',
+                'evening': 'evening wind-down is challenging',
+                'night': 'nighttime brings worry and reflection',
+                'late-night': 'sleep schedule may need attention'
+            };
+            
+            return peakTime ? {
+                peak: {
+                    time: peakTime.replace('-', ' '),
+                    avgStress: highestAvgStress,
+                    interpretation: timeInterpretations[peakTime] || 'schedule needs examination'
+                }
+            } : {};
+        }
+
+        function analyzeTriggerPatterns(data) {
+            const triggerWords = data
+                .map(entry => entry.triggers.toLowerCase())
+                .join(' ')
+                .split(/\s+/)
+                .filter(word => word.length > 3);
+            
+            const triggerCounts = {};
+            triggerWords.forEach(word => {
+                triggerCounts[word] = (triggerCounts[word] || 0) + 1;
+            });
+            
+            // Categorize triggers
+            const categoryCounts = {};
+            for (const [category, keywords] of Object.entries(stressTriggerCategories)) {
+                categoryCounts[category] = 0;
+                keywords.forEach(keyword => {
+                    if (triggerCounts[keyword]) {
+                        categoryCounts[category] += triggerCounts[keyword];
+                    }
+                });
+            }
+            
+            const primaryCategory = Object.entries(categoryCounts)
+                .sort(([,a], [,b]) => b - a)[0];
+            
+            if (primaryCategory && primaryCategory[1] > 0) {
+                const topKeywords = Object.entries(triggerCounts)
+                    .sort(([,a], [,b]) => b - a)
+                    .slice(0, 3)
+                    .map(([word]) => word);
+                
+                return {
+                    primary: {
+                        category: primaryCategory[0],
+                        keywords: topKeywords,
+                        count: primaryCategory[1]
+                    }
+                };
+            }
+            
+            return {};
+        }
+
+        function analyzeEmotionalPatterns(data) {
+            const thoughtsText = data
+                .map(entry => entry.thoughts.toLowerCase())
+                .join(' ');
+            
+            const emotionalThemes = {
+                worry: ['worry', 'anxious', 'nervous', 'afraid', 'scared', 'fearful'],
+                overwhelm: ['overwhelmed', 'too much', 'can\'t handle', 'exhausted', 'drained'],
+                frustration: ['frustrated', 'angry', 'annoyed', 'irritated', 'mad'],
+                inadequacy: ['not good enough', 'failure', 'disappointed', 'worthless', 'inadequate'],
+                control: ['out of control', 'helpless', 'powerless', 'stuck', 'trapped']
+            };
+            
+            const themeScores = {};
+            for (const [theme, keywords] of Object.entries(emotionalThemes)) {
+                themeScores[theme] = keywords.reduce((score, keyword) => {
+                    const count = (thoughtsText.match(new RegExp(keyword, 'g')) || []).length;
+                    return score + count;
+                }, 0);
+            }
+            
+            const dominantThemes = Object.entries(themeScores)
+                .filter(([, score]) => score > 0)
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 2)
+                .map(([theme]) => theme);
+            
+            if (dominantThemes.length > 0) {
+                const interpretations = {
+                    worry: 'anticipatory thinking and future-focused anxiety',
+                    overwhelm: 'capacity management and boundary-setting challenges',
+                    frustration: 'unmet expectations and control conflicts',
+                    inadequacy: 'self-worth concerns and perfectionist tendencies',
+                    control: 'powerlessness and need for agency'
+                };
+                
+                return {
+                    dominant: {
+                        themes: dominantThemes,
+                        interpretation: interpretations[dominantThemes[0]] || 'complex emotional responses'
+                    }
+                };
+            }
+            
+            return {};
+        }
+
+        function generateInsights(data, latestEntry) {
+            const insights = [];
+            
+            // Breakthrough insight based on patterns
+            if (data.length >= 7) {
+                const recentAvg = data.slice(-7).reduce((sum, entry) => sum + entry.stressLevel, 0) / 7;
+                const overallAvg = data.reduce((sum, entry) => sum + entry.stressLevel, 0) / data.length;
+                
+                if (recentAvg < overallAvg - 0.5) {
+                    insights.push({
+                        type: 'breakthrough',
+                        title: '🎉 Breakthrough Detected!',
+                        content: `Your stress levels have decreased by ${Math.round((overallAvg - recentAvg) * 100) / 100} points over the past week. This suggests your coping strategies are becoming more effective!`
+                    });
+                }
+            }
+            
+            // Biblical comfort based on triggers
+            const triggerCategory = categorizeTrigger(latestEntry.triggers);
+            if (triggerCategory && biblicalComfortByTrigger[triggerCategory]) {
+                const comfort = biblicalComfortByTrigger[triggerCategory];
+                insights.push({
+                    type: 'biblical',
+                    title: '🙏 Biblical Encouragement',
+                    verse: comfort.verse,
+                    reference: comfort.ref,
+                    insight: comfort.insight
+                });
+            }
+            
+            // Pattern-based recommendations
+            const recommendations = generateRecommendations(data, latestEntry);
+            if (recommendations.length > 0) {
+                insights.push({
+                    type: 'recommendations',
+                    title: '💡 Personalized Recommendations',
+                    content: recommendations
+                });
+            }
+            
+            return insights;
+        }
+
+        function categorizeTrigger(triggerText) {
+            const text = triggerText.toLowerCase();
+            
+            for (const [category, keywords] of Object.entries(stressTriggerCategories)) {
+                if (keywords.some(keyword => text.includes(keyword))) {
+                    return category;
+                }
+            }
+            
+            return null;
+        }
+
+        function generateRecommendations(data, latestEntry) {
+            const recommendations = [];
+            
+            // Time-based recommendations
+            if (latestEntry.timeOfDay === 'morning') {
+                recommendations.push('Consider starting your day with 5 minutes of prayer or meditation to build resilience.');
+            }
+            
+            // Stress level recommendations
+            if (latestEntry.stressLevel >= 4) {
+                recommendations.push('High stress detected. Try the 4-7-8 breathing technique: inhale for 4, hold for 7, exhale for 8.');
+            }
+            
+            // Location-based recommendations
+            if (latestEntry.location === 'work') {
+                recommendations.push('Take micro-breaks every hour - even 30 seconds of deep breathing can help reset your nervous system.');
+            }
+            
+            return recommendations;
+        }
+
+        function displayPatterns(patterns) {
+            const grid = document.getElementById('patternsGrid');
+            
+            if (patterns.length === 0) {
+                grid.innerHTML = '<div class="chart-placeholder">Complete more entries to discover patterns</div>';
+                return;
+            }
+            
+            grid.innerHTML = patterns.map(pattern => `
+                <div class="pattern-card">
+                    <div class="pattern-header">
+                        <div class="pattern-icon ${pattern.type}">
+                            ${pattern.type === 'trigger' ? '⚡' : pattern.type === 'time' ? '🕐' : '💭'}
+                        </div>
+                        <div>
+                            <div class="pattern-title">${pattern.title}</div>
+                            <div class="pattern-subtitle">${pattern.subtitle}</div>
+                        </div>
+                    </div>
+                    <div class="pattern-content">${pattern.content}</div>
+                </div>
+            `).join('');
+        }
+
+        function displayInsights(insights) {
+            const insightContent = document.getElementById('insightContent');
+            
+            insightContent.innerHTML = insights.map(insight => {
+                if (insight.type === 'breakthrough') {
+                    return `
+                        <div class="breakthrough-insight">
+                            <div class="insight-content">
+                                <h3 class="insight-title">${insight.title}</h3>
+                                <p>${insight.content}</p>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                if (insight.type === 'biblical') {
+                    return `
+                        <div class="biblical-comfort">
+                            <div class="verse-text">"${insight.verse}"</div>
+                            <div class="verse-ref">— ${insight.reference}</div>
+                            <div style="margin-top: 1rem; font-style: normal; color: var(--light);">
+                                ${insight.insight}
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                if (insight.type === 'recommendations') {
+                    return `
+                        <div style="background: rgba(255, 255, 255, 0.05); padding: 1.5rem; border-radius: var(--border-radius); margin: 1rem 0;">
+                            <h4 style="color: var(--primary); margin-bottom: 1rem;">${insight.title}</h4>
+                            ${insight.content.map(rec => `<p style="margin-bottom: 0.5rem;">• ${rec}</p>`).join('')}
+                        </div>
+                    `;
+                }
+                
+                return '';
+            }).join('');
+        }
+
+        async function shareInsights() {
+            const shareData = {
+                title: 'My Stress Pattern Insights - Depths to Heights',
+                text: 'I\'ve been tracking my stress patterns and discovering breakthrough insights with this AI-powered tool!',
+                url: window.location.href
+            };
+
+            try {
+                if (navigator.share) {
+                    await navigator.share(shareData);
+                } else {
+                    const url = encodeURIComponent(shareData.url);
+                    const text = encodeURIComponent(shareData.text);
+                    window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank');
+                }
+            } catch (error) {
+                console.log('Error sharing:', error);
+            }
+        }
+
+        function downloadReport() {
+            if (stressData.length === 0) {
+                alert('No data to export. Please track some stress entries first.');
+                return;
+            }
+            
+            const report = generateReport();
+            const blob = new Blob([report], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'stress-pattern-report.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function exportData() {
+            if (stressData.length === 0) {
+                alert('No data to export. Please track some stress entries first.');
+                return;
+            }
+            
+            const csv = generateCSV();
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'stress-data.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function generateReport() {
+            const totalEntries = stressData.length;
+            const avgStress = stressData.reduce((sum, entry) => sum + entry.stressLevel, 0) / totalEntries;
+            const patterns = identifyPatterns(stressData);
+            
+            let report = `STRESS PATTERN ANALYSIS REPORT\n`;
+            report += `Generated: ${new Date().toLocaleDateString()}\n\n`;
+            report += `SUMMARY:\n`;
+            report += `- Total entries: ${totalEntries}\n`;
+            report += `- Average stress level: ${Math.round(avgStress * 100) / 100}\n\n`;
+            
+            if (patterns.length > 0) {
+                report += `IDENTIFIED PATTERNS:\n`;
+                patterns.forEach((pattern, index) => {
+                    report += `${index + 1}. ${pattern.title}\n`;
+                    report += `   ${pattern.content}\n\n`;
+                });
+            }
+            
+            report += `Created with Depths to Heights - Stress Pattern Recognition Tool\n`;
+            report += `https://depthstoheights.org\n`;
+            
+            return report;
+        }
+
+        function generateCSV() {
+            const headers = ['Date', 'Stress Level', 'Triggers', 'Time of Day', 'Location', 'Physical Symptoms', 'Thoughts', 'Coping Response'];
+            const csvData = [headers];
+            
+            stressData.forEach(entry => {
+                csvData.push([
+                    entry.date,
+                    entry.stressLevel,
+                    entry.triggers,
+                    entry.timeOfDay,
+                    entry.location,
+                    entry.physicalSymptoms,
+                    entry.thoughts,
+                    entry.copingResponse
+                ]);
+            });
+            
+            return csvData.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+        }
+
+        function toggleDyslexiaFont() {
+            document.body.classList.toggle('dyslexia-friendly');
+            const btn = document.getElementById('dyslexiaBtn');
+            btn.classList.toggle('active');
+            localStorage.setItem('dyslexiaFriendly', document.body.classList.contains('dyslexia-friendly'));
+        }
+
+        function toggleHighContrast() {
+            document.body.classList.toggle('high-contrast');
+            const btn = document.getElementById('contrastBtn');
+            btn.classList.toggle('active');
+            localStorage.setItem('highContrast', document.body.classList.contains('high-contrast'));
+        }
+
+        function increaseTextSize() {
+            const textSizes = ['Normal Text', 'Large Text', 'Extra Large'];
+            const classes = ['', 'large-text', 'extra-large-text'];
+            
+            document.body.classList.remove('large-text', 'extra-large-text');
+            textSizeLevel = (textSizeLevel + 1) % 3;
+            
+            if (textSizeLevel > 0) {
+                document.body.classList.add(classes[textSizeLevel]);
+            }
+            
+            document.getElementById('textSizeBtn').textContent = `🔍 ${textSizes[textSizeLevel]}`;
+            localStorage.setItem('textSizeLevel', textSizeLevel);
+        }
+
+        function loadAccessibilityPreferences() {
+            if (localStorage.getItem('dyslexiaFriendly') === 'true') {
+                document.body.classList.add('dyslexia-friendly');
+                document.getElementById('dyslexiaBtn').classList.add('active');
+            }
+            
+            if (localStorage.getItem('highContrast') === 'true') {
+                document.body.classList.add('high-contrast');
+                document.getElementById('contrastBtn').classList.add('active');
+            }
+            
+            const savedTextSize = parseInt(localStorage.getItem('textSizeLevel') || '0');
+            textSizeLevel = savedTextSize;
+            const textSizes = ['Normal Text', 'Large Text', 'Extra Large'];
+            const classes = ['', 'large-text', 'extra-large-text'];
+            
+            if (textSizeLevel > 0) {
+                document.body.classList.add(classes[textSizeLevel]);
+            }
+            
+            document.getElementById('textSizeBtn').textContent = `🔍 ${textSizes[textSizeLevel]}`;
+        }
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', initializeApp);
+
+        // Keyboard navigation
+        document.addEventListener('keypress', function(e) {
+            if (e.target.classList.contains('stress-level') && (e.key === 'Enter' || e.key === ' ')) {
+                e.preventDefault();
+                const level = parseInt(e.target.dataset.level);
+                selectStressLevel(level);
+            }
+        });
+    </script>
+</body>
+</html>
